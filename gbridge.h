@@ -20,36 +20,34 @@
 #define _GBRIDGE_H_
 
 #include <config.h>
+#include <linux/types.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <linux/types.h>
 #include <sys/queue.h>
 
-#define __packed  __attribute__((__packed__))
-#define BIT(nr)                 (1UL << (nr))
+#define __packed __attribute__((__packed__))
+#define BIT(nr) (1UL << (nr))
 
-#include <greybus.h>
-#include <greybus_protocols.h>
-#include <greybus_manifest.h>
-#include <gb_netlink.h>
+#include "gb_netlink.h"
+#include "greybus.h"
+#include "greybus_manifest.h"
+#include "greybus_protocols.h"
 
-#define SVC_CPORT		0
-#define CONTROL_CPORT		0
-#define AP_INTF_ID		0
-#define OP_RESPONSE		0x80
+#define SVC_CPORT 0
+#define CONTROL_CPORT 0
+#define AP_INTF_ID 0
+#define OP_RESPONSE 0x80
 
 #ifndef TAILQ_FOREACH_SAFE
-#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                      \
-        for ((var) = TAILQ_FIRST((head));                               \
-            (var) && ((tvar) = TAILQ_NEXT((var), field), 1);            \
-            (var) = (tvar))
+#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                             \
+  for ((var) = TAILQ_FIRST((head));                                            \
+       (var) && ((tvar) = TAILQ_NEXT((var), field), 1); (var) = (tvar))
 #endif
 
 int svc_init(void);
 int svc_register_driver();
-int svc_send_module_inserted_event(uint8_t intf_id,
-				   uint32_t vendor_id,
-				   uint32_t product_id, uint64_t serial_number);
+int svc_send_module_inserted_event(uint8_t intf_id, uint32_t vendor_id,
+                                   uint32_t product_id, uint64_t serial_number);
 void svc_watchdog_disable(void);
 
 #endif /* _GBRIDGE_H_ */
