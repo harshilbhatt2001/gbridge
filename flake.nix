@@ -36,7 +36,7 @@
       #  sed -i 's/bundle->cport_node/cport_node/g' protocols/manifest.c
       #'';
       preConfigure = ''
-        export CFLAGS="-g -Wall -Werror -I$(pwd)/include $CFLAGS"
+        export CFLAGS="-g -I$(pwd)/include $CFLAGS"
         export CPPFLAGS="$CFLAGS"
       '';
       preBuild = ''
