@@ -18,7 +18,9 @@
 
 #include "debug.h"
 #include "gbridge.h"
+#include "greybus_manifest.h"
 #include <endian.h>
+#include <string.h>
 
 #define BLUE "\x1b[34m"
 #define GREEN "\x1b[32m"
@@ -134,6 +136,12 @@ static const struct operation_name control_types[] = {
     {GB_CONTROL_TYPE_INTF_HIBERNATE_ABORT, "INTF_HIBERNATE_ABORT"},
     {0, NULL}};
 
+static const struct operation_name descriptor_types[] = {
+    {GREYBUS_TYPE_INVALID, "INVALID"},   {GREYBUS_TYPE_INTERFACE, "INTERFACE"},
+    {GREYBUS_TYPE_STRING, "STRING"},     {GREYBUS_TYPE_BUNDLE, "BUNDLE"},
+    {GREYBUS_TYPE_CPORT, "CPORT"},       {GREYBUS_TYPE_MIKROBUS, "MIKROBUS"},
+    {GREYBUS_TYPE_PROPERTY, "PROPERTY"}, {GREYBUS_TYPE_DEVICE, "DEVICE"},
+};
 // static const struct operation_name request_types[] = {
 //    {GB_REQUEST_TYPE_CPORT_SHUTDOWN, "CPORT_SHUTDOWN"},
 //    {GB_REQUEST_TYPE_INVALID, "INVALID"},
@@ -223,6 +231,39 @@ static void decode_payload(uint8_t type, void *payload, size_t payload_size) {
              req->major, req->minor);
     }
     break;
+  }
+  case GB_CONTROL_TYPE_GET_MANIFEST: {
+    struct greybus_manifest *manifest = payload;
+    printf(BLUE "[MANIFEST] " RESET "size: " GREEN "%u " RESET "version: " GREEN
+                "%u.%u" RESET "\n",
+           manifest->header.size, manifest->header.version_major,
+           manifest->header.version_minor);
+
+    uint8_t descriptor_id = 0;
+    size_t cur_byte = 0;
+    uint8_t *byte_ptr = (uint8_t *)&manifest->descriptors[0];
+    while (cur_byte < manifest->header.size) {
+      struct greybus_descriptor *cur_descriptor =
+          (struct greybus_descriptor *)(byte_ptr + cur_byte);
+      printf(BLUE "[DESCRIPTOR %u (%lu))] " RESET "size: " GREEN "%u " RESET
+                  "type: " GREEN "%s " RESET "\n",
+             descriptor_id, cur_byte, cur_descriptor->header.size,
+             descriptor_types[cur_descriptor->header.type].name);
+
+      printf(BLUE "[DESCRIPTOR %u (%lu))] " RESET, descriptor_id, cur_byte);
+      printf(BLUE "[HEX] " RESET);
+      for (int i = 0; i < cur_descriptor->header.size; i++) {
+        printf(MAGENTA "%02x " RESET, (((uint8_t *)&cur_descriptor[0]))[i]);
+      }
+
+      printf("\n\n");
+      descriptor_id += 1;
+
+      cur_byte += cur_descriptor->header.size;
+      if (cur_descriptor->header.size == 0) {
+        break;
+      }
+    }
   }
   default:
     if (payload_size > 0) {

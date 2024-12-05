@@ -1,6 +1,6 @@
 bin_PROGRAMS = gbridge
 
-gbridge_CFLAGS = -Wall -Werror -I${GBDIR}
+gbridge_CFLAGS = -g -Wall -Werror -I${GBDIR}
 gbridge_LDLIBS =
 
 gbridge_SOURCES = main.c \
